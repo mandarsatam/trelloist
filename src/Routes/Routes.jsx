@@ -8,7 +8,6 @@ const Routes = () => {
         <>
         <Switch>
             <Route path="/" exact>
-                {/* <TodoOfficial/> */}
                 <Dashboard/>
             </Route>
             <Route exact>

@@ -1,183 +1,242 @@
-import { GET_TODO_FAILURE, GET_TODO_REQUEST, GET_TODO_SUCCESS } from "./actionType"
-import { ADD_TODO_FAILURE, ADD_TODO_REQUEST, ADD_TODO_SUCCESS } from "./actionType"
-import { UPDATE_TODO_FAILURE, UPDATE_TODO_REQUEST, UPDATE_TODO_SUCCESS } from "./actionType"
-import { DELETE_TODO_FAILURE, DELETE_TODO_REQUEST, DELETE_TODO_SUCCESS } from "./actionType"
+import { GET_TASK, UPDATE_TASK, DELETE_TASK, GET_SUBTASK, ADD_SUBTASK, UPDATE_SUBTASK } from "./actionType"
+import { ADD_TASK } from "./actionType"
+import { ADD_LIST, GET_LIST, UPDATE_LIST, DELETE_LIST } from "./actionType";
+
 import axios from "axios"
 
-// Get Todo
-
-const getTodoRequest = () =>{
+// MongoDB Actions
+const getListSuccess = (payload) => {
     return {
-        type: GET_TODO_REQUEST
-    }
-}
-
-const getTodoSuccess = (payload) =>{
-    return {
-        type: GET_TODO_SUCCESS,
+        type: GET_LIST,
         payload
     }
 }
 
-const getTodoFailure = (payload) =>{
-    return {
-        type: GET_TODO_FAILURE,
-        payload
-    }
-}
-
-const getTodo = () => (dispatch) => {
-    dispatch(getTodoRequest());
+const getList = (payload) => (dispatch) => {
     return axios
-    .get("http://localhost:3000/tasks")
-    .then(res => dispatch(getTodoSuccess(res.data)))
-    .catch(err => getTodoFailure(err))
-}
-
-// Add Todo
-
-const addTodoRequest = () =>{
-    return {
-        type: ADD_TODO_REQUEST
-    }
-}
-
-const addTodoSuccess = (payload) =>{
-    return {
-        type: ADD_TODO_SUCCESS,
-        payload
-    }
-}
-
-const addTodoFailure = (payload) =>{
-    return {
-        type: ADD_TODO_FAILURE,
-        payload
-    }
-}
-
-const addTodo = (payload) => (dispatch) => {
-    dispatch(addTodoRequest());
-    return axios
-    .post("http://localhost:3000/tasks", payload)
-    .then(res => {
-        dispatch(addTodoSuccess(res.data));
-        return {
-            success: true
-        }
-    })
-    .catch(err => {
-        dispatch(addTodoFailure(err));
-    })
-    
-}
-
-// Update Todo
-
-const updateTodoRequest = () =>{
-    return {
-        type: UPDATE_TODO_REQUEST,
-        
-    }
-}
-
-const updateTodoSuccess = (payload) =>{
-    return {
-        type: UPDATE_TODO_SUCCESS,
-        payload
-    }
-}
-
-const updateTodoFailure = (payload) =>{
-    return {
-        type: UPDATE_TODO_FAILURE,
-        payload
-    }
-}
-
-
-const updateTodo = (payload, type, id) => (dispatch) => {
-    dispatch(updateTodoRequest());
-    if(type === "task"){
-        return axios.patch(`http://localhost:3000/tasks/${id}`, payload)
+        .get(`https://trelloistbackend.herokuapp.com/lists/${payload.boardId}`)
         .then(res => {
-            dispatch(updateTodoSuccess(res.data));
+            dispatch(getListSuccess(res.data.data))
+        })
+        .catch(err => console.log(err))
+}
+
+const addListSuccess = (payload) => {
+    return {
+        type: ADD_LIST,
+        payload
+    }
+}
+
+const addList = (payload) => (dispatch) => {
+    return axios
+        .post("https://trelloistbackend.herokuapp.com/lists", payload)
+        .then(res => {
+            dispatch(addListSuccess(res.data.data));
             return {
-                success : true
+                success: true
             }
         })
-        .catch(err => {
-            dispatch(updateTodoFailure(err));
-        })
-    }else{
-        let getData = "";
-        return axios.get(`http://localhost:3000/tasks/${id}`)
+        .catch(err => console.log(err))
+}
+
+const updateListSuccess = (payload) => {
+    return {
+        type: UPDATE_LIST,
+        payload
+    }
+}
+
+const updateList = (payload) => (dispatch) => {
+    return axios
+        .patch("https://trelloistbackend.herokuapp.com/lists", payload)
         .then(res => {
-            getData = res.data;
-            getData.subTasks.push(payload);
+            dispatch(updateListSuccess(res.data.data));
+            return {
+                success: true
+            }
         })
-        .then(() =>{
-            let config = {
-                method: 'patch',
-                url: `http://localhost:3000/tasks/${id}`,
-                headers: { 
-                    'Content-Type': 'application/json'
-                },
-                data : {subTasks : getData.subTasks}
-            };
-            return axios(config)
-            .then(res => {
-                dispatch(updateTodoSuccess({...res.data, id}));
-                return {
-                    success: true
-                }
-            })
-            .catch(err => {
-                dispatch(updateTodoFailure(err));
-            })
-        })
-    }
-
+        .catch(err => console.log(err))
 }
 
-
-// Delete Todo
-
-const deleteTodoRequest = () =>{
+const deleteListSuccess = (payload) => {
     return {
-        type: DELETE_TODO_REQUEST
-    }
-}
-
-const deleteTodoSuccess = (payload) =>{
-    return {
-        type: DELETE_TODO_SUCCESS,
+        type: DELETE_LIST,
         payload
     }
 }
 
-const deleteTodoFailure = (payload) =>{
+const deleteList = (payload) => (dispatch) => {
+    return axios
+        .delete("https://trelloistbackend.herokuapp.com/lists", { data: payload })
+        .then(res => {
+            dispatch(deleteListSuccess(payload));
+            return {
+                success: true
+            }
+        })
+        .catch(err => console.log(err))
+}
+
+
+
+//Actions for Tasks
+
+const getTaskSuccess = (payload) => {
     return {
-        type: DELETE_TODO_FAILURE,
+        type: GET_TASK,
         payload
     }
 }
 
-
-const deleteTodo = (id) => (dispatch) => {
-    dispatch(deleteTodoRequest());
-    return axios.delete(`http://localhost:3000/tasks/${id}`)
-    .then(res => {
-        deleteTodoSuccess(res.data);
-        return {
-            success: true
-        }
-    })
-    .catch(err => {
-        dispatch(deleteTodoFailure(err));
-    })
+const getTask = (payload) => (dispatch) => {
+    return axios
+        .get(`https://trelloistbackend.herokuapp.com/task/${payload.boardId}`)
+        .then(res => {
+            dispatch(getTaskSuccess(res.data.data))
+        })
+        .catch(err => console.log(err))
 }
 
-export {getTodo, updateTodo, addTodo, deleteTodo}
+
+const addTaskSuccess = (payload) => {
+    return {
+        type: ADD_TASK,
+        payload
+    }
+}
+
+const addTask = (payload) => (dispatch) => {
+    return axios
+        .post("https://trelloistbackend.herokuapp.com/task/", payload)
+        .then(res => {
+            dispatch(addTaskSuccess(res.data.data));
+            return {
+                success: true
+            }
+        })
+        .catch(err => console.log(err))
+}
+
+const updateTaskSuccess = (payload) => {
+    return {
+        type: UPDATE_TASK,
+        payload
+    }
+}
+
+const updateTask = (payload) => (dispatch) => {
+    return axios
+        .patch("https://trelloistbackend.herokuapp.com/task", payload)
+        .then(res => {
+            dispatch(updateTaskSuccess(res.data.data));
+            return {
+                success: true
+            }
+        })
+        .catch(err => console.log(err))
+}
+
+
+const deleteTaskSuccess = (payload) => {
+    return {
+        type: DELETE_TASK,
+        payload
+    }
+}
+
+const deleteTask = (payload) => (dispatch) => {
+    return axios
+        .delete("https://trelloistbackend.herokuapp.com/task", { data: payload })
+        .then(res => {
+            dispatch(deleteTaskSuccess(res.data.data));
+            return {
+                success: true
+            }
+        })
+        .catch(err => console.log(err))
+}
+
+
+//Actions for subTasks
+
+
+const getSubTaskSuccess = (payload) => {
+    return {
+        type: GET_SUBTASK,
+        payload
+    }
+}
+
+const getSubTask = (payload) => (dispatch) => {
+    return axios
+        .get(`https://trelloistbackend.herokuapp.com/subTask/${payload.boardId}`)
+        .then(res => {
+            dispatch(getSubTaskSuccess(res.data.data))
+        })
+        .catch(err => console.log(err))
+}
+
+
+const addSubTaskSuccess = (payload) => {
+    return {
+        type: ADD_SUBTASK,
+        payload
+    }
+}
+
+const addSubTask = (payload) => (dispatch) => {
+    return axios
+        .post("https://trelloistbackend.herokuapp.com/subTask/", payload)
+        .then(res => {
+            dispatch(addSubTaskSuccess(res.data.data));
+            return {
+                success: true
+            }
+        })
+        .catch(err => console.log(err))
+}
+
+const updateSubTaskSuccess = (payload) => {
+    return {
+        type: UPDATE_SUBTASK,
+        payload
+    }
+}
+
+const updateSubTask = (payload) => (dispatch) => {
+    return axios
+        .patch("https://trelloistbackend.herokuapp.com/subTask", payload)
+        .then(res => {
+            dispatch(updateSubTaskSuccess(res.data.data));
+            return {
+                success: true
+            }
+        })
+        .catch(err => console.log(err))
+}
+
+
+// const deleteTaskSuccess = (payload) =>{
+//     return {
+//         type: DELETE_TASK,
+//         payload
+//     }
+// }
+
+// const deleteTask = (payload) => (dispatch) =>{
+//     return axios
+//     .delete("https://trelloistbackend.herokuapp.com/task", {data: payload})
+//     .then(res => {
+//         console.log(res);
+//         dispatch(deleteTaskSuccess(res.data.data));
+//         return {
+//             success: true
+//         }
+//     })
+//     .catch(err => console.log(err))
+// }
+
+export { getList, addList, updateList, deleteList, getTask, addTask, updateTask, deleteTask, getSubTask, addSubTask, updateSubTask, }
 
 

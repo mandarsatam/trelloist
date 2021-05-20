@@ -15,70 +15,72 @@ import AddIcon from '@material-ui/icons/Add';
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import {v4 as uuid} from "uuid";
 import { useDispatch, useSelector, shallowEqual } from 'react-redux';
 import Button from '@material-ui/core/Button';
-import {deleteTodo, getTodo, updateTodo} from "../../Redux/action.js"
+import { addSubTask, deleteTask, deleteTodo, getTask, getTodo, updateTask, updateTodo } from "../../Redux/action.js"
 import DeleteIcon from '@material-ui/icons/Delete';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { Divider, Paper } from '@material-ui/core';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import EventIcon from '@material-ui/icons/Event';
+import moment from "moment";
+import { TodoSubCard } from "./TodoSubCard/TodoSubCard"
 
 
 const useStyles = makeStyles((theme) => ({
     modal: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
     },
     paper: {
-      backgroundColor: theme.palette.background.paper,
-      border: "none",
-      padding: theme.spacing(2, 4, 3),
-      outline: "none",
-      height: "90vh",
-      width: "50%",
-      position:"relative",
-      borderRadius: "10px",
+        backgroundColor: theme.palette.background.paper,
+        border: "none",
+        padding: theme.spacing(2, 4, 3),
+        outline: "none",
+        height: "90vh",
+        width: "50%",
+        position: "relative",
+        borderRadius: "10px",
     },
-    dialog:{
+    dialog: {
         borderRadius: "10px"
     },
-    todoCardCont:{
-        marginBottom:"10px"
+    todoCardCont: {
+        marginBottom: "10px"
     },
-    todoCardTop:{
+    todoCardTop: {
         margin: "auto",
         display: "flex",
-        marginBottom : "0.5em"
+        marginBottom: "0.5em"
     },
-    todoCardDetails:{
+    todoCardDetails: {
         display: "flex"
     },
-    dummyCheckbox:{
+    dummyCheckbox: {
         visibility: "hidden"
     }
 }));
 
-const TodoCard = ({id, title, status, type , scheduleDate,  addSubTask, subTasks}) => {
+const TodoCard = ({ id, title, status, scheduleDate, list }) => {
+    const boardId = useSelector(state => state.boardId);
     const classes = useStyles();
     const [open, setOpen] = React.useState(false);
     const [subTitle, setSubTitle] = React.useState("");
-    const [todoTitle, setTodoTitle] = React.useState(title);
-    const [todoScheduleDate, setTodoScheduleDate] = React.useState(scheduleDate);
-    const [todoType, setTodoType] = React.useState(type);
-    const [todoStatus, setTodoStatus] = React.useState(status);
-    const [todoSubTasks, setTodoSubTasks] = React.useState(subTasks);
+    const [taskTitle, setTaskTitle] = React.useState(title);
+    const [taskScheduleDate, setTaskScheduleDate] = React.useState(scheduleDate);
+    const [taskStatus, setTaskStatus] = React.useState(status);
     const [dialogDelete, setDeleteDialog] = React.useState(false);
+    const lists = useSelector(state => state.lists);
+    const [currList, setCurrList] = React.useState(list);
 
-    React.useEffect(() => {
-        setTodoSubTasks(subTasks);
-    }, [subTasks])
+    const subTasks = useSelector(state => state.subTasks.filter(subTask => {
+        return subTask.task === id;
+    }))
+
+    const dispatch = useDispatch();
 
     const handleOpen = () => {
         setOpen(true);
@@ -88,43 +90,88 @@ const TodoCard = ({id, title, status, type , scheduleDate,  addSubTask, subTasks
         setOpen(false);
     };
 
-    const handleSubTask = () =>{
+    const handleSubTask = () => {
         const postObj = {
-            id : uuid(),
-            title : subTitle,
+            boardId,
+            listId: list,
+            taskId: id,
+            title: subTitle,
             status: false
         }
-        addSubTask(postObj, type="subTask", id);
+        const action = addSubTask(postObj);
+        dispatch(action)
+            .then(res => {
+                if(res.success){
+                    dispatch(getTask({boardId}));
+                }
+            })
+
     }
-    
-    const dispatch = useDispatch();
 
     const handleSave = () => {
-        const updateObj ={
+        const updateObj = {
             id,
-            title: todoTitle,
-            status: todoStatus,
-            type: todoType,
-            subTasks: todoSubTasks,
-            scheduleDate: todoScheduleDate
+            title: taskTitle,
+            status: taskStatus,
+            scheduleDate: taskScheduleDate,
+            listId: list
         }
-        const action = updateTodo(updateObj, type="task", id);
+        const action = updateTask(updateObj);
         dispatch(action)
-        .then(res =>{
-            if(res.success){
-                dispatch(getTodo());
-            }
-        })
+            .then(res => {
+                if (res.success) {
+                    dispatch(getTask({ boardId }));
+                }
+            })
     }
 
-    const handleDelete = (id) => {
-        const action = deleteTodo(id);
+    const handleTaskStatus = (checked) => {
+        setTaskStatus(checked);
+        const updateObj = {
+            id,
+            title: taskTitle,
+            status: checked,
+            scheduleDate: taskScheduleDate,
+            listId: list
+        }
+        const action = updateTask(updateObj);
         dispatch(action)
-        .then(res => {
-            if(res.success){
-                dispatch(getTodo());
-            }
-        })
+            .then(res => {
+                if (res.success) {
+                    dispatch(getTask({ boardId }));
+                }
+            })
+    }
+
+    const handleListChange = (e) => {
+        setCurrList(e.target.value);
+        const updateObj = {
+            id,
+            title: taskTitle,
+            status: taskStatus,
+            scheduleDate: taskScheduleDate,
+            listId: e.target.value
+        }
+        const action = updateTask(updateObj);
+        dispatch(action)
+            .then(res => {
+                if (res.success) {
+                    dispatch(getTask({ boardId }));
+                }
+            })
+    }
+
+    const handleDelete = () => {
+        const payload = {
+            id
+        }
+        const action = deleteTask(payload);
+        dispatch(action)
+            .then(res => {
+                if (res.success) {
+                    dispatch(getTask({ boardId }));
+                }
+            })
     }
 
     const handleDeleteDialogOpen = () => {
@@ -136,32 +183,33 @@ const TodoCard = ({id, title, status, type , scheduleDate,  addSubTask, subTasks
     }
 
 
-    const handleSubTaskEdit = (id) =>{
-        const newSubTasks = todoSubTasks?.map(subTask => {
-            return subTask.id === id ? {...subTask, status: !subTask.status} :subTask;
-        })
-        setTodoSubTasks(newSubTasks);
+    const handleSubTaskEdit = (id) => {
+        // const newSubTasks = todoSubTasks?.map(subTask => {
+        //     return subTask.id === id ? {...subTask, status: !subTask.status} :subTask;
+        // })
+        // setTodoSubTasks(newSubTasks);
     }
+
 
     return (
         <Paper className={classes.todoCardCont}>
             <Box className={classes.todoCardTop}>
-                <Checkbox primary checked={todoStatus} onChange = {(e) => setTodoStatus(e.target.checked)}/>
-                <div style={{flexGrow:"1", textAlign:"left"}}>
-                    <p style={todoStatus === true? {textDecoration:"line-through"} : null}>{title}</p> 
+                <Checkbox primary="true" checked={taskStatus} onChange={(e) => handleTaskStatus(e.target.checked)} />
+                <div style={{ flexGrow: "1", textAlign: "left" }}>
+                    <p style={taskStatus === true ? { textDecoration: "line-through" } : null}>{title}</p>
                 </div>
                 {
-                    todoStatus === false? <IconButton onClick={handleOpen}><CreateIcon fontSize="small"/></IconButton> : <IconButton aria-label="delete" onClick={handleDeleteDialogOpen}><DeleteIcon fontSize="small"/></IconButton>
+                    taskStatus === false ? <IconButton onClick={handleOpen}><CreateIcon fontSize="small" /></IconButton> : <IconButton aria-label="delete" onClick={handleDeleteDialogOpen}><DeleteIcon fontSize="small" /></IconButton>
                 }
             </Box>
             <Box className={classes.todoCardDetails}>
-                <Checkbox className={classes.dummyCheckbox}/>
-                <Box style={{display:"flex"}}>
-                    <EventIcon color="action" fontSize="small"/> 
-                    <Typography variant="subtitle3" style={{color:"#757575"}}>Feb 12</Typography>
+                <Checkbox className={classes.dummyCheckbox} />
+                <Box style={{ display: "flex" }}>
+                    <EventIcon color="action" fontSize="small" />
+                    <Typography variant="subtitle2" style={{ color: "#757575", marginLeft: "5px" }}>{moment(taskScheduleDate, 'YYYY-MM-DD').format('D MMM')}</Typography>
                 </Box>
             </Box>
-             <Dialog
+            <Dialog
                 open={dialogDelete}
                 onClose={handleDeleteDialogClose}
                 aria-labelledby="alert-dialog-title"
@@ -169,19 +217,19 @@ const TodoCard = ({id, title, status, type , scheduleDate,  addSubTask, subTasks
                 className={classes.dialog}
             >
                 <DialogTitle id="alert-dialog-title">
-                    <ErrorOutlineIcon/>
+                    <ErrorOutlineIcon />
                     <Typography variant="subtitle1">
                         Are you sure you want to delete <b>{title}</b> ?
                     </Typography>
                 </DialogTitle>
-                <Divider/>
+                <Divider />
                 <DialogActions>
-                <Button onClick={handleDeleteDialogClose} variant="outlined">
-                    Cancel
-                </Button>
-                <Button onClick={() => handleDelete(id)} color="secondary" variant="contained">
-                    Delete
-                </Button>
+                    <Button onClick={handleDeleteDialogClose} variant="outlined">
+                        Cancel
+                    </Button>
+                    <Button onClick={() => handleDelete(id)} color="secondary" variant="contained">
+                        Delete
+                    </Button>
                 </DialogActions>
             </Dialog>
             <Modal
@@ -193,25 +241,27 @@ const TodoCard = ({id, title, status, type , scheduleDate,  addSubTask, subTasks
                 closeAfterTransition
                 BackdropComponent={Backdrop}
                 BackdropProps={{
-                timeout: 500,
+                    timeout: 500,
                 }}
             >
                 <Fade in={open}>
                     <div className={classes.paper}>
-                        <h4><CreateIcon fontSize="small"/> Edit</h4>
+                        <h4><CreateIcon fontSize="small" /> Edit</h4>
                         <Grid container spacing={3}>
                             <Grid item>
                                 <Box>
-                                    <Checkbox primary checked={todoStatus} onChange = {(e) => setTodoStatus(e.target.checked)}/>
-                                    <TextField id="standard-basic" defaultValue={title} onChange={(e) => setTodoTitle(e.target.value)}/>
+                                    <Checkbox primary="true" checked={taskStatus} onChange={(e) => setTaskStatus(e.target.checked)} />
+                                    <TextField id="standard-basic" defaultValue={title} onChange={(e) => setTaskTitle(e.target.value)} />
                                 </Box>
                             </Grid>
                             <Grid item>
-                                <RadioGroup aria-label="gender" name="gender1" value={todoType} onChange={(e) => setTodoType(e.target.value)}>
+                                <RadioGroup aria-label="gender" name="gender1" value={currList} onChange={handleListChange}>
                                     <Box>
-                                        <FormControlLabel value="ToDo" control={<Radio />} label="To Do" />
-                                        <FormControlLabel value="Doing" control={<Radio />} label="Doing" />
-                                        <FormControlLabel value="Done" control={<Radio />} label="Done" />
+                                        {
+                                            lists?.map(item => (
+                                                <FormControlLabel value={item._id} control={<Radio />} label={item.listTitle} key={item._id}/>
+                                            ))
+                                        }
                                     </Box>
                                 </RadioGroup>
                             </Grid>
@@ -221,58 +271,55 @@ const TodoCard = ({id, title, status, type , scheduleDate,  addSubTask, subTasks
                                     label="Schedule"
                                     type="date"
                                     className={classes.textField}
-                                    value={todoScheduleDate}
-                                    onChange={(e) => setTodoScheduleDate(e.target.value)}
+                                    value={taskScheduleDate}
+                                    onChange={(e) => setTaskScheduleDate(e.target.value)}
                                     InputLabelProps={{
-                                    shrink: true,
+                                        shrink: true,
                                     }}
                                 />
                             </Grid>
                             <Grid item>
-                            <IconButton aria-label="delete" className={classes.margin} onClick={handleDeleteDialogOpen}>
-                                <DeleteIcon />
-                            </IconButton>
+                                <IconButton aria-label="delete" className={classes.margin} onClick={handleDeleteDialogOpen}>
+                                    <DeleteIcon />
+                                </IconButton>
                             </Grid>
                         </Grid>
 
-                            <Dialog
-                                open={dialogDelete}
-                                onClose={handleDeleteDialogClose}
-                                aria-labelledby="alert-dialog-title"
-                                aria-describedby="alert-dialog-description"
-                                className={classes.dialog}
-                            >
-                                <DialogTitle id="alert-dialog-title">
-                                    <ErrorOutlineIcon/>
-                                    <Typography variant="subtitle1">
-                                        Are you sure you want to delete <b>{title}</b> ?
-                                    </Typography>
-                                </DialogTitle>
-                                <Divider/>
-                                <DialogActions>
+                        <Dialog
+                            open={dialogDelete}
+                            onClose={handleDeleteDialogClose}
+                            aria-labelledby="alert-dialog-title"
+                            aria-describedby="alert-dialog-description"
+                            className={classes.dialog}
+                        >
+                            <DialogTitle id="alert-dialog-title">
+                                <ErrorOutlineIcon />
+                                <Typography variant="subtitle1">
+                                    Are you sure you want to delete <b>{title}</b> ?
+                                </Typography>
+                            </DialogTitle>
+                            <Divider />
+                            <DialogActions>
                                 <Button onClick={handleDeleteDialogClose} variant="outlined">
                                     Cancel
                                 </Button>
                                 <Button onClick={() => handleDelete(id)} color="secondary" variant="contained">
                                     Delete
                                 </Button>
-                                </DialogActions>
-                            </Dialog>
+                            </DialogActions>
+                        </Dialog>
                         <div>
                             <h2>Subtasks</h2>
-                            <hr/>
+                            <hr />
                             <Box>
-                                <IconButton aria-label="add" onClick={(e) =>handleSubTask(e)}>
+                                <IconButton aria-label="add" onClick={(e) => handleSubTask(e)}>
                                     <AddIcon />
                                 </IconButton>
-                                <TextField size="small" style={{padding:"10px"}} placeholder="Add a task" onChange={e => setSubTitle(e.target.value)}/>
+                                <TextField size="small" style={{ padding: "10px" }} placeholder="Add a task" onChange={e => setSubTitle(e.target.value)} />
                             </Box>
                             {
-                                todoSubTasks?.map(subTask =>(
-                                    <div className="subtask_card" key={subTask.id}>
-                                        <Checkbox checked ={subTask.status} onChange={() => handleSubTaskEdit(subTask.id)}/>
-                                        <Typography>{subTask.title}</Typography>
-                                    </div>
+                                subTasks?.map(subTask => (
+                                    <TodoSubCard key={subTask._id} {...subTask} />
                                 ))
                             }
                         </div>
@@ -286,4 +333,4 @@ const TodoCard = ({id, title, status, type , scheduleDate,  addSubTask, subTasks
     )
 }
 
-export {TodoCard}
+export { TodoCard }
