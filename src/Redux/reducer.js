@@ -3,14 +3,12 @@ import { UPDATE_LIST } from "./actionType";
 import { DELETE_LIST } from "./actionType";
 
 const initState = {
-    user: "admin@gmail.com",
-    boardId: "60a61ada821bb3a1812ae3c2",
     lists: [],
     tasks: [],
     subTasks: [],
     todos: [],
     todoTitle: [],
-    isLoading: false,
+    isLoading: true,
     isError: false
 }
 

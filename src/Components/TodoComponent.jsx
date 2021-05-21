@@ -59,14 +59,14 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 const TodoComponent = ({ compTitle, id }) => {
-    const boardId = useSelector(state => state.boardId);
+    const boardId = useSelector(state => state.authReducer.currentBoard._id, shallowEqual);
     const classes = useStyles();
     const [title, setTitle] = React.useState("");
     const [editModal, setEditModal] = React.useState(false);
     const [listTitle, setListTitle] = React.useState(compTitle);
     const [dialogDelete, setDeleteDialog] = React.useState(false);
 
-    const tasks = useSelector(state => state.tasks.filter(task => {
+    const tasks = useSelector(state => state.reducer.tasks.filter(task => {
         return task.list === id;
     }))
 

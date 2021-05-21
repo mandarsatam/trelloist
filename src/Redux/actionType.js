@@ -3,6 +3,7 @@ export const ADD_TITLE_SUCCESS = "ADD_TITLE_SUCCESS";
 export const UPDATE_TITLE_SUCCESS = "UPDATE_TITLE_SUCCESS";
 export const DELETE_TITLE_SUCCESS = "DELETE_TITLE_SUCCESS";
 
+export const GET_BOARD = "GET_BOARD";
 
 export const GET_LIST = "GET_LIST";
 export const ADD_LIST = "ADD_LIST";

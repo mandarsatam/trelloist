@@ -1,4 +1,4 @@
-import { GET_TASK, UPDATE_TASK, DELETE_TASK, GET_SUBTASK, ADD_SUBTASK, UPDATE_SUBTASK } from "./actionType"
+import { GET_TASK, UPDATE_TASK, DELETE_TASK, GET_SUBTASK, ADD_SUBTASK, UPDATE_SUBTASK, GET_BOARD } from "./actionType"
 import { ADD_TASK } from "./actionType"
 import { ADD_LIST, GET_LIST, UPDATE_LIST, DELETE_LIST } from "./actionType";
 
@@ -29,9 +29,11 @@ const addListSuccess = (payload) => {
 }
 
 const addList = (payload) => (dispatch) => {
+    console.log(payload);
     return axios
         .post("https://trelloistbackend.herokuapp.com/lists", payload)
         .then(res => {
+            console.log(res.data.data);
             dispatch(addListSuccess(res.data.data));
             return {
                 success: true
@@ -226,7 +228,7 @@ const updateSubTask = (payload) => (dispatch) => {
 
 // const deleteTask = (payload) => (dispatch) =>{
 //     return axios
-//     .delete("https://trelloistbackend.herokuapp.com/task", {data: payload})
+//     .delete("https://localhost:2233/task", {data: payload})
 //     .then(res => {
 //         console.log(res);
 //         dispatch(deleteTaskSuccess(res.data.data));
@@ -237,6 +239,6 @@ const updateSubTask = (payload) => (dispatch) => {
 //     .catch(err => console.log(err))
 // }
 
-export { getList, addList, updateList, deleteList, getTask, addTask, updateTask, deleteTask, getSubTask, addSubTask, updateSubTask, }
+export { getList, addList, updateList, deleteList, getTask, addTask, updateTask, deleteTask, getSubTask, addSubTask, updateSubTask}
 
 

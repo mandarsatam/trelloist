@@ -14,7 +14,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import TextField from '@material-ui/core/TextField';
 import { useDispatch, useSelector, shallowEqual } from 'react-redux';
-import { getTodoTitle, getList, addList, getTask, getSubTask} from "../Redux/action"
+import { getTodoTitle, getList, addList, getTask, getSubTask } from "../Redux/action"
 import "../Components/TodoComponent"
 import { TodoComponent } from '../Components/TodoComponent';
 import Button from '@material-ui/core/Button';
@@ -26,6 +26,12 @@ import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import Grow from '@material-ui/core/Grow';
 import Popper from '@material-ui/core/Popper';
 import axios from "axios";
+import CircularProgress from '@material-ui/core/CircularProgress';
+import GoogleLogin from 'react-google-login'
+import { login_performer, logout_user } from '../Redux/auth/action'
+
+
+
 
 
 
@@ -130,8 +136,12 @@ const useStyles = makeStyles((theme) => ({
 
 const Dashboard = () => {
   const classes = useStyles();
-  const boardId = useSelector(state => state.boardId);
-  const lists = useSelector(state => state.lists);
+  const isLoading = useSelector(state => state.reducer.isLoading);
+  const boardId = useSelector(state => state.authReducer.currentBoard._id, shallowEqual);
+  const isLoggedIn = useSelector(state => state.authReducer.isLoggedIn);
+  const lists = useSelector(state => state.reducer.lists);
+
+  // const {isLoggedIn} = useSelector(state => state.authReducer, shallowEqual);
 
   const [open, setOpen] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
@@ -139,11 +149,19 @@ const Dashboard = () => {
 
   const dispatch = useDispatch();
 
+  console.log(isLoggedIn);
+
   React.useEffect(() => {
-    dispatch(getList({boardId}));
-    dispatch(getTask({boardId}));
-    dispatch(getSubTask({boardId}));
-  }, [dispatch])
+    dispatch(getList({ boardId }));
+    dispatch(getTask({ boardId }));
+    dispatch(getSubTask({ boardId }));
+  }, [isLoggedIn])
+
+  // console.log(isLoggedIn);
+
+  // React.useEffect(() => {
+
+  // }, [isLoggedIn])
 
 
   const handleDrawerOpen = () => {
@@ -160,6 +178,7 @@ const Dashboard = () => {
   const handleClose = () => {
     setModalOpen(false);
   };
+  console.log(boardId);
 
   const handleAddList = () => {
     const payload = {
@@ -170,7 +189,7 @@ const Dashboard = () => {
     dispatch(action)
       .then(res => {
         if (res.success) {
-          dispatch(getList({boardId}));
+          dispatch(getList({ boardId }));
         }
       })
     setModalOpen(false)
@@ -206,8 +225,16 @@ const Dashboard = () => {
   const [signedIn, setSignedIn] = React.useState(false);
   const [token, setToken] = React.useState("");
 
-  const handleSignIn = () => {
-    const token = axios.get("")
+  const handleResponse = (response) => {
+    console.log(response);
+    dispatch(login_performer(response.profileObj))
+  }
+
+  const handleLogOut = () => {
+    localStorage.removeItem("currentUser")
+    localStorage.removeItem("isLoggedIn")
+    localStorage.removeItem("currentBoard")
+    dispatch(logout_user());
   }
 
 
@@ -227,16 +254,16 @@ const Dashboard = () => {
             <MenuIcon />
           </IconButton>
           <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
-            Trelloist
+            trelloist
           </Typography>
-          <div style={{marginRight:"2em"}}>
+          <div style={{ marginRight: "2em" }}>
             <Button
               ref={anchorRef}
               aria-controls={menuOpen ? 'menu-list-grow' : undefined}
               aria-haspopup="true"
               onClick={handleToggle}
             >
-              <i className="fas fa-user-circle" style={{fontSize:"2em", color:"white"}}></i>
+              <i className="fas fa-user-circle" style={{ fontSize: "2em", color: "white" }}></i>
             </Button>
             <Popper open={menuOpen} anchorEl={anchorRef.current} role={undefined} transition disablePortal>
               {({ TransitionProps, placement }) => (
@@ -244,19 +271,28 @@ const Dashboard = () => {
                   {...TransitionProps}
                   style={{ transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom' }}
                 >
-                  <Paper style={{width:"10em", padding:"1em"}}>
+                  <Paper style={{ width: "10em", padding: "1em" }}>
                     <ClickAwayListener onClickAway={handleClose}>
-                      {/* <a href="http://localhost:2244/auth/google"> */}
-                        <Button color="primary" variant="contained" onClick={handleSignIn}>Sign In</Button>
-                      {/* </a> */}
+                      {isLoggedIn === false ?
+                        <div>
+                          <GoogleLogin
+                            clientId="610183070871-utsec0qra7f67jahi6hcjck971g0k8ad.apps.googleusercontent.com"
+                            buttonText="Signin with Google"
+                            onSuccess={handleResponse}
+                            onFailure={handleResponse}
+                            cookiePolicy={'single_host_origin'}
+                          />
+                        </div> :
+                        <div>
+                          <Button variant="contained" color="primary" onClick={handleLogOut}>Sign Out</Button>
+                        </div>
+                      }
                     </ClickAwayListener>
                   </Paper>
                 </Grow>
               )}
             </Popper>
           </div>
-
-
         </Toolbar>
       </AppBar>
       <Drawer
@@ -278,11 +314,16 @@ const Dashboard = () => {
         <div className={classes.appBarSpacer} />
         <Container className={classes.container}>
           {
-            lists.map(e =>
-              <TodoComponent compTitle={e.listTitle} id={e._id} key={e._id}/>
-            )
+            isLoading === true ? <CircularProgress style={{ margin: "1em auto" }} /> :
+              <>
+                {
+                  lists.map(e =>
+                    <TodoComponent compTitle={e.listTitle} id={e._id} key={e._id} />
+                  )
+                }
+                <Button variant="outlined" onClick={handleOpen}>Add list</Button>
+              </>
           }
-          <Button variant="outlined" onClick={handleOpen}>Add list</Button>
         </Container>
       </main>
       <Modal

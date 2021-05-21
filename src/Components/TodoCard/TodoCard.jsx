@@ -65,7 +65,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const TodoCard = ({ id, title, status, scheduleDate, list }) => {
-    const boardId = useSelector(state => state.boardId);
+    const boardId = useSelector(state => state.authReducer.currentBoard._id, shallowEqual);
     const classes = useStyles();
     const [open, setOpen] = React.useState(false);
     const [subTitle, setSubTitle] = React.useState("");
@@ -73,10 +73,10 @@ const TodoCard = ({ id, title, status, scheduleDate, list }) => {
     const [taskScheduleDate, setTaskScheduleDate] = React.useState(scheduleDate);
     const [taskStatus, setTaskStatus] = React.useState(status);
     const [dialogDelete, setDeleteDialog] = React.useState(false);
-    const lists = useSelector(state => state.lists);
+    const lists = useSelector(state => state.reducer.lists);
     const [currList, setCurrList] = React.useState(list);
 
-    const subTasks = useSelector(state => state.subTasks.filter(subTask => {
+    const subTasks = useSelector(state => state.reducer.subTasks.filter(subTask => {
         return subTask.task === id;
     }))
 
