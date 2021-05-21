@@ -1,6 +1,11 @@
 # Trelloist ✅
 This is a fusion of the Kanban style of Trelloist and the simplicity of todoist.
 
+## Deployed Link & Image Samples
+Click here :point_right: [trelloist](https://trelloist.netlify.app/)
+
+![Sample image of project](https://i.imgur.com/Ptvw8Rv.png)
+
 ## Features:
 - [x] User Authentication and Sign-out
 - [x] Display the default lists in the user board when a user logs in
