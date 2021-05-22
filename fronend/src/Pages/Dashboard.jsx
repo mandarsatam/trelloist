@@ -109,6 +109,7 @@ const useStyles = makeStyles((theme) => ({
   container: {
     paddingTop: theme.spacing(4),
     paddingBottom: theme.spacing(4),
+    paddingRight : theme.spacing(4),
     display: "flex",
     overflowX: "auto",
     height: "90vh"
@@ -131,6 +132,14 @@ const useStyles = makeStyles((theme) => ({
   },
   fixedHeight: {
     backgroundColor: "#EBECF0",
+  },
+  addListButton: { 
+    margin: "1em",
+    height: "10em"
+  },
+  dummyDiv: {
+    width: "10em", 
+    visibility: "hidden"
   }
 }));
 
@@ -321,7 +330,8 @@ const Dashboard = () => {
                     <TodoComponent compTitle={e.listTitle} id={e._id} key={e._id} />
                   )
                 }
-                <Button variant="outlined" onClick={handleOpen}>Add list</Button>
+                <Button size="large" variant="outlined" onClick={handleOpen} className={classes.addListButton}>Add Another list</Button>
+                <div className={classes.dummyDiv}>Somewhere</div>
               </>
           }
         </Container>

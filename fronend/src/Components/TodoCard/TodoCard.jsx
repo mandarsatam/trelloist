@@ -1,5 +1,4 @@
 import React from 'react'
-import "./TodoCard.css"
 import { makeStyles } from '@material-ui/core/styles';
 import Modal from '@material-ui/core/Modal';
 import Backdrop from '@material-ui/core/Backdrop';
@@ -27,6 +26,8 @@ import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import EventIcon from '@material-ui/icons/Event';
 import moment from "moment";
 import { TodoSubCard } from "./TodoSubCard/TodoSubCard"
+import styles from "./TodoCard.module.css"
+
 
 
 const useStyles = makeStyles((theme) => ({
@@ -98,6 +99,7 @@ const TodoCard = ({ id, title, status, scheduleDate, list }) => {
             title: subTitle,
             status: false
         }
+        
         const action = addSubTask(postObj);
         dispatch(action)
             .then(res => {
@@ -105,6 +107,7 @@ const TodoCard = ({ id, title, status, scheduleDate, list }) => {
                     dispatch(getTask({boardId}));
                 }
             })
+        setSubTitle("")
 
     }
 
@@ -246,11 +249,15 @@ const TodoCard = ({ id, title, status, scheduleDate, list }) => {
             >
                 <Fade in={open}>
                     <div className={classes.paper}>
-                        <h4><CreateIcon fontSize="small" /> Edit</h4>
-                        <Grid container spacing={3}>
-                            <Grid item>
+                        <div className={styles.dialogTitle}>
+                            <CreateIcon fontSize="small" color="disabled"/> 
+                            <p style={{margin: "0 0.5em"}}>Edit Card</p>
+                        </div>
+                        <Grid container spacing={2}>
+                            <Grid item style={{marginLeft: "0"}}>
                                 <Box>
-                                    <Checkbox primary="true" checked={taskStatus} onChange={(e) => setTaskStatus(e.target.checked)} />
+                                    <Checkbox primary="true" checked={taskStatus} onChange={(e) => setTaskStatus(e.target.checked)} 
+                                    style={{marginLeft: 0}}/>
                                     <TextField id="standard-basic" defaultValue={title} onChange={(e) => setTaskTitle(e.target.value)} />
                                 </Box>
                             </Grid>
@@ -309,13 +316,18 @@ const TodoCard = ({ id, title, status, scheduleDate, list }) => {
                             </DialogActions>
                         </Dialog>
                         <div>
-                            <h2>Subtasks</h2>
-                            <hr />
+                            <h2 style={{margin: "1.2em 0 0.3em"}}>Subtasks</h2>
+                            <Divider />
                             <Box>
                                 <IconButton aria-label="add" onClick={(e) => handleSubTask(e)}>
                                     <AddIcon />
                                 </IconButton>
-                                <TextField size="small" style={{ padding: "10px" }} placeholder="Add a task" onChange={e => setSubTitle(e.target.value)} />
+                                <TextField size="small" value={subTitle} style={{ padding: "10px" }} placeholder="Add a task" onChange={e => setSubTitle(e.target.value)}
+                                onKeyPress={event => {
+                                    if (event.key === "Enter") {
+                                        handleSubTask(event);
+                                    }
+                                }} />
                             </Box>
                             {
                                 subTasks?.map(subTask => (
@@ -323,7 +335,7 @@ const TodoCard = ({ id, title, status, scheduleDate, list }) => {
                                 ))
                             }
                         </div>
-                        <div className="save_btn_cont">
+                        <div className={styles.save_btn_cont}>
                             <Button variant="contained" color="primary" onClick={handleSave}>Save</Button>
                         </div>
                     </div>

@@ -3,6 +3,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Typography from '@material-ui/core/Typography';
 import { getSubTask, updateSubTask } from '../../../Redux/action';
 import { useDispatch, useSelector, shallowEqual } from 'react-redux';
+import "./TodoSubCard.css"
 
 
 
@@ -30,7 +31,7 @@ const TodoSubCard = ({title, status, list, board, task, _id}) => {
     return (
         <div className="subtask_card">
             <Checkbox checked={subTaskStatus} onChange={(e) => handleSubTaskEdit(e.target.checked)} />
-            <Typography>{title}</Typography>
+            <p>{title}</p>
         </div>
     )
 }

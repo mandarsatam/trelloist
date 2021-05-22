@@ -1,3 +1,30 @@
+.dialogTitle{
+    margin: 1em 0;
+    display: flex;
+    justify-content: left;
+    flex-wrap: nowrap;
+}
+
+.dialogTitle p{
+    font-size: 0.9em;
+}
+
+
+.save_btn_cont{
+    position: absolute;
+    right: 3em;
+    bottom: 3em;
+}
+
+
+
+
+
+
+
+
+
+
 /* .item-card{
 	width: 100%;
 	display: flex;
@@ -5,9 +32,9 @@
     background-color: white;
     padding: 1em;
     margin: 0.5em;
-}
+} */
 
-.item-card p{
+/* .item-card p{
 	margin: 0;
 	font-size: 1.2em;
 }
@@ -23,12 +50,6 @@
 
 .subtask_card{
     display: flex;
-}
+} */
 
-.save_btn_cont{
-    position: absolute;
-    bottom: 2em;
-    right: 2em;
 
-}
- */

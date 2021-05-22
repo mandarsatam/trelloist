@@ -25,6 +25,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { Divider, Paper } from '@material-ui/core';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
+import styles from "./TodoComponent.module.css"
 
 
 
@@ -92,6 +93,7 @@ const TodoComponent = ({ compTitle, id }) => {
             status: false,
             scheduleDate: tomorrow
         };
+        setTitle("");
         const action = addTask(payload);
         dispatch(action)
         .then(res => {
@@ -156,7 +158,12 @@ const TodoComponent = ({ compTitle, id }) => {
                 </div>
                 <Grid container spacing={1}>
                     <Grid item md={10}>
-                        <TextField variant="filled" placeholder="Add a task" fullWidth={true} onChange={(e) => { setTitle(e.target.value) }} />
+                        <TextField variant="filled" placeholder="Add a task" value={title} fullWidth={true} onChange={(e) => { setTitle(e.target.value) }}
+                        onKeyPress={event => {
+                            if (event.key === "Enter") {
+                                handleAdd();
+                            }
+                        }} />
                     </Grid>
                     <Grid item md={2}>
                         <IconButton aria-label="add" onClick={handleAdd}>
@@ -179,13 +186,18 @@ const TodoComponent = ({ compTitle, id }) => {
             >
                 <Fade in={editModal}>
                     <div className={classes.paper2}>
-                        <h4><CreateIcon fontSize="small" />Edit List</h4>
-                        <TextField id="standard-basic" defaultValue={listTitle} onChange={(e) => setListTitle(e.target.value)} />
-                        <div className="save_btn_cont">
-                            <Button variant="contained" color="primary" onClick={handleEditListTitle}>Save</Button>
+                        <div className={styles.dialogTitle}>
+                            <CreateIcon fontSize="small"/> 
+                            <h4 style={{margin: "0 0.5em"}}>Edit List</h4>
                         </div>
-                        <div className="delete_btn_cont">
-                            <Button variant="contained" color="secondary" onClick={handleDeleteDialogOpen}>Delete</Button>
+                        <TextField id="standard-basic" defaultValue={listTitle} onChange={(e) => setListTitle(e.target.value)} fullWidth/>
+                        <div className={styles.listEditButtonCont}>
+                            <div className="save_btn_cont">
+                                <Button variant="contained" color="primary" onClick={handleEditListTitle}>Save</Button>
+                            </div>
+                            <div className="delete_btn_cont" style={{marginLeft: "1em"}}>
+                                <Button variant="contained" color="secondary" onClick={handleDeleteDialogOpen}>Delete</Button>
+                            </div>
                         </div>
                     </div>
                 </Fade>
